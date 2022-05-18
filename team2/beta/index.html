@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Project Beta</title>
+  <link rel="icon" href="https://talk-cheap.github.io/img/favicon.ico">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="keywords" content="doc,docs,documentation">
+  <meta name="description" content="Documentation for project beta.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="docs/lib/theme/theme-light.css" id="light">
+  <style>
+    :root {
+      /* Reduce the font size */
+      --base-font-size: 14px;
+
+      /* Change the sidebar bullets */
+      --sidebar-nav-link-before-content: '';
+    }
+
+    #main {
+      max-width: 95%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">Loading ...</div>
+  <script>
+    window.$docsify = {
+      alias: {
+        '/.*/_navbar.md': '/_navbar.md'
+      },
+      auto2top: true,
+      coverpage: false,
+      loadSidebar: true,
+      loadNavbar: true,
+      mergeNavbar: true,
+      maxLevel: 2,
+      subMaxLevel: 1,
+      name: 'Project Beta',
+      search: {
+        noData: {
+          '/de-de/': 'Keine Ergebnisse!',
+          '/zh-cn/': '没有结果!',
+          '/': 'No results!'
+        },
+        paths: 'auto',
+        placeholder: {
+          '/de-de/': 'Suche',
+          '/zh-cn/': '搜索',
+          '/': 'Search'
+        }
+      },
+      plugins: [
+        function (hook, vm) {
+          hook.beforeEach(function (html) {
+            url = 'https://github.com/talk-cheap/beta/blob/main/' + vm.route.file;
+            var editHtml = '[:memo: Edit Document](' + url + ')\n\n'
+            return editHtml +
+              html
+          })
+        }
+      ]
+    }
+  </script>
+  <script src="docs/lib/docsify.min.js"></script>
+  <script src="docs/lib/theme/docsify-themeable.js"></script>
+  <script src="docs/lib/plugins/copy-code.min.js"></script>
+  <script src="docs/lib/plugins/pagination.min.js"></script>
+  <script src="docs/lib/plugins/tabs.js"></script>
+  <script src="docs/lib/plugins/zoom-image.min.js"></script>
+
+  <script src="docs/lib/lang/prism-bash.min.js"></script>
+  <script src="docs/lib/lang/prism-batch.min.js"></script>
+  <script src="docs/lib/lang/prism-docker.min.js"></script>
+  <script src="docs/lib/lang/prism-git.min.js"></script>
+  <script src="docs/lib/lang/prism-go.min.js"></script>
+  <script src="docs/lib/lang/prism-groovy.min.js"></script>
+  <script src="docs/lib/lang/prism-ini.min.js"></script>
+  <script src="docs/lib/lang/prism-java.min.js"></script>
+  <script src="docs/lib/lang/prism-json.min.js"></script>
+  <script src="docs/lib/lang/prism-markdown.min.js"></script>
+  <script src="docs/lib/lang/prism-nginx.min.js"></script>
+  <script src="docs/lib/lang/prism-powershell.min.js"></script>
+  <script src="docs/lib/lang/prism-python.min.js"></script>
+  <script src="docs/lib/lang/prism-r.min.js"></script>
+  <script src="docs/lib/lang/prism-sql.min.js"></script>
+  <script src="docs/lib/lang/prism-typescript.min.js"></script>
+  <script src="docs/lib/lang/prism-yaml.min.js"></script>
+  <script>
+    // do not load some plugins in IE browser as it is not working correctly
+    if (!window.document.documentMode) {
+      var libs = ['search.min', 'mermaid.min', 'docsify-mermaid'];
+      for (var i = 0; i < libs.length; i++) {
+        var js = libs[i];
+        var searchJs = document.createElement('script');
+        searchJs.src = 'lib/plugins/' + js + '.js';
+        document.write(searchJs.outerHTML);
+      }
+    }
+
+    function addCss(fileName, title) {
+      var head = document.head;
+      var link = document.createElement("link");
+      link.type = "text/css";
+      link.rel = "stylesheet";
+      link.href = fileName;
+      link.id = title;
+      head.appendChild(link);
+    }
+
+    function setTheme(theme) {
+      var themeKey = 'docsifyTheme';
+      var savedTheme = localStorage.getItem(themeKey);
+
+      if (!savedTheme) {
+        if (!theme) theme = 'light';
+        localStorage.setItem(themeKey, theme)
+      } else if (theme) {
+        localStorage.setItem(themeKey, theme)
+      }
+
+      theme = localStorage.getItem(themeKey);
+      var removed = theme === 'dark' ? 'light' : 'dark';
+      var sheet = document.getElementById(removed);
+      if (sheet) sheet.parentNode.removeChild(sheet);
+      addCss('lib/theme/theme-' + theme + '.css', theme);
+    }
+
+    var url = window.location.href;
+    var forceLight = url.indexOf('theme=light') !== -1;
+    var forceDark = url.indexOf('theme=dark') !== -1;
+
+    if (forceDark) forceDark = 'dark';
+    if (forceLight) forceLight = 'light';
+    var theme = forceLight || forceDark || '';
+    setTheme(theme);
+  </script>
+</body>
+
+</html>

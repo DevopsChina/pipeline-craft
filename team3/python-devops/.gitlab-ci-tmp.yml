@@ -1,0 +1,106 @@
+variables:
+  HARBOR_BASE: harbor.devops.soulchild.cn/devops
+  PIP_MIRROR: https://pypi.tuna.tsinghua.edu.cn/simple
+
+stages:
+  - prepare
+  - pylint
+  - pytest
+  - coverage
+  - allure
+  - sonar
+  - quality-gate
+  - docker-build
+
+cache:
+  paths:
+    - .pip
+
+prepare:
+  image: $HARBOR_BASE/python:3.8
+  stage: prepare
+  script:
+    - mkdir -p tmp/
+  artifacts:
+    paths:
+      - tmp/
+
+
+pylint:
+  image: $HARBOR_BASE/python:3.8
+  stage: pylint
+  script:
+    - pip install pylint==2.12.2 pylint-json2html==0.4.0 -i $PIP_MIRROR
+    - pylint src/ --exit-zero --reports=y > tmp/pylint-report.txt
+    - pylint src/  --exit-zero --output-format=json | pylint-json2html -o pylint.html
+  artifacts:
+    paths:
+      - tmp/
+
+pytest:
+  image: $HARBOR_BASE/python:3.8
+  stage: pytest
+  script:
+    - pip --cache-dir=.pip install pytest==6.2.5 allure-python-commons==2.9.45 allure-pytest==2.9.45 -i $PIP_MIRROR
+    - pip --cache-dir=.pip install -r requirements.txt -i $PIP_MIRROR
+    - pytest src/tests.py --alluredir=./tmp/allure-reports
+  artifacts:
+    paths:
+      - tmp/
+
+
+allure:
+  image: $HARBOR_BASE/allure
+  stage: allure
+  script:
+    - export JAVA_HOME=/jdk-17.0.2/
+    - /allure-2.17.3/bin/allure generate tmp/allure-reports -o tmp/allure-report --clean
+  artifacts:
+    paths:
+      - tmp/
+
+coverage:
+  image: $HARBOR_BASE/python:3.8
+  stage: coverage
+  script:
+    - pip --cache-dir=.pip install coverage==6.2 pytest==6.2.5 allure-python-commons==2.9.45 allure-pytest==2.9.45 -i $PIP_MIRROR
+    - pip --cache-dir=.pip install -r requirements.txt -i $PIP_MIRROR
+    - coverage run -m pytest src/tests.py
+    - coverage xml -o tmp/coverage.xml
+    - coverage html -d tmp/coverage
+  artifacts:
+    paths:
+      - tmp/
+
+quality-gate:
+  image: $HARBOR_BASE/python:3.8
+  stage: quality-gate
+  script:
+    - python package_checker.py
+
+sonar:
+  image: $HARBOR_BASE/sonar-scanner
+  stage: sonar
+  script:
+    - sonar-scanner
+  artifacts:
+    paths:
+      - tmp/
+
+docker-build:
+  stage: docker-build
+  image: $HARBOR_BASE/docker:latest
+  variables:
+    IMAGE_REF: $HARBOR_BASE/python:$CI_COMMIT_REF_NAME-$CI_PIPELINE_ID
+#  only:
+#    - tags
+  script:
+    - docker login -u $HARBOR_UNAME -p $HARBOR_PWD harbor.devops.soulchild.cn
+    - docker build -t $IMAGE_REF .
+    - docker push $IMAGE_REF
+#    - docker rmi $IMAGE_REF
+    - echo $IMAGE_REF build done
+
+
+
+

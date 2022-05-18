@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: bmi-web
+  name: bmi-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: bmi-web
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: bmi-web
+    spec:
+      containers:
+      - image: jinggegeha/mywebapp
+        name: bmi-web
+        ports:
+        - containerPort: 8889
+        resources: {}
+        env:
+          - name: JAVA_OPTS
+            value: -Dservice.registry.address=http://bmi-service-center:30100
+status: {}
+
+

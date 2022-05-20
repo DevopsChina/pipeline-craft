@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: bmi-service-center
+  labels:
+    run: bmi-service-center
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: bmi-service-center
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: bmi-service-center
+    spec:
+      containers:
+      - image: servicecomb/service-center
+        name: bmi-service-center
+        resources: {}
+status: {}
+

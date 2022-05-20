@@ -1,0 +1,85 @@
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Bash.gitlab-ci.yml
+
+# See https://docs.gitlab.com/ee/ci/yaml/index.html for all available options
+
+# you can delete this line if you're not using Docker
+#image: busybox:latest
+
+stages:
+  - build
+  - scan
+  - containerize
+  - deploy
+  - test
+
+before_script:
+  - echo "Before script section"
+  - echo "run an update here or install a build dependency"
+
+after_script:
+  - echo "After script section"
+  - echo "do some cleanup here"
+
+Build Artifacts:
+  stage: build
+  script:
+    - echo "command to build artifacts"
+
+Unit Test:
+  stage: build
+  script:
+    - echo "command to run unit tests"
+    - echo "unit test completed"
+
+SonarQube Scan:
+  stage: scan
+  script:
+    - echo "command to run sonar scan"
+    - echo "scan completed"
+
+Security Scan:
+  stage: scan
+  script:
+    - echo "command to run sonar scan"
+    - echo "scan completed"
+
+Build Images:
+  stage: containerize
+  script:
+    - echo "command to build docker images"
+
+Deploy Dev:
+  stage: deploy
+  script:
+    - echo "Deploy to Dev environment"
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "uat"
+
+Deploy UAT:
+  stage: deploy
+  script:
+    - echo "Deploy to UAT environment"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "uat"
+
+Deploy PROD:
+  stage: deploy
+  script:
+    - echo "Deploy to PROD environment"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+Integration Test:
+  stage: test
+  script:
+    - echo "command to run integration tests"
+    - echo "unit test finished"
+
+Performance Test:
+  stage: test
+  script:
+    - echo "command to run performance tests"
+    - echo "unit test finished"

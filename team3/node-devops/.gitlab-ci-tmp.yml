@@ -1,0 +1,79 @@
+image: harbor.devops.soulchild.cn/devops/node:14
+variables:
+  HARBOR_BASE: harbor.devops.soulchild.cn/devops
+  IMAGE_REF: $HARBOR_BASE/node:$CI_COMMIT_REF_NAME-$CI_PIPELINE_ID
+
+stages:
+  - prepare
+  - eslint
+  - ut-coverage
+  - sonar
+  - docker-build
+
+prepare:
+  stage: prepare
+  only:
+    - master
+    - release
+    - dev
+  script:
+    - npm install --registry=http://registry.npm.taobao.org
+    - npm run build
+  cache:
+    paths:
+      - node_modules/
+  artifacts:
+    paths:
+      - dist/
+
+eslint:
+  stage: eslint
+  only:
+    - master
+    - dev
+  script:
+    - npm run lint
+  cache:
+    paths:
+      - node_modules/
+  artifacts:
+    paths:
+      - reports/
+
+ut-coverage:
+  stage: ut-coverage
+  only:
+    - master
+    - dev
+  script:
+    - npm run test
+  cache:
+    paths:
+      - node_modules/
+  artifacts:
+    paths:
+      - coverage/
+      - allure-results/
+      - allure-report/
+
+sonar:
+  stage: sonar
+  image: $HARBOR_BASE/sonar-scanner:latest
+  only:
+    - master
+    - dev
+  script:
+    - sonar-scanner
+
+docker-build:
+  stage: docker-build
+  image: $HARBOR_BASE/docker:latest
+  only:
+    - master
+    - release
+    - dev
+  script:
+    - docker login -u $HARBOR_UNAME -p $HARBOR_PWD harbor.devops.soulchild.cn
+    - docker build -t $IMAGE_REF .
+    - docker push $IMAGE_REF
+    - echo $IMAGE_REF build done

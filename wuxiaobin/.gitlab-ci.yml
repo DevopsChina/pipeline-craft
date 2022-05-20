@@ -1,0 +1,111 @@
+# .gitlab-ci.yml
+# Author: hillbun@gmail.com
+
+variables:
+  PROJECT_NAME: "wuxiaobin"
+
+stages:
+  - build
+  - artifactory
+  - deploy_dev
+  - deploy_uat
+  - deploy_prod
+
+build:
+  stage: build
+  variables:
+    LANGRAGE: "nodejs"
+  cache:
+    key: "${CI_PROJECT_NAME}-${CI_BUILD_REF_NAME}-wuxiaobin"
+    paths:
+      - dist
+      - node_modules
+      - package.json.md5sum
+    policy: pull-push
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_BUILD_REF_NAME}-wuxiaobin"
+    paths:
+      - dist
+  script:
+    - /home/gitlab-runner/script/build.py
+  only:
+    - master
+    - canary
+  tags:
+    - JETSAAS2
+  allow_failure: false
+
+artifactory_image:
+  stage: artifactory
+  variables:
+    IMAGE_NAME: "mark4go/wuxiaobin"
+  cache:
+    key: "${CI_PROJECT_NAME}-${CI_BUILD_REF_NAME}-wuxiaobin"
+    paths:
+      - dist
+  script:
+    - /home/gitlab-runner/script/image.py
+  only:
+    - master
+    - canary
+  tags:
+    - JETSAAS2
+  allow_failure: false
+
+deploy_dev:
+  stage: deploy_dev
+  environment:
+    name: dev
+    url: https://wuxiaobin-dev.jetsaas.com/
+  variables:
+    ENV_NAME: "wuxiaobin-devops-dev"
+    DEPLOYMENT_NAME: "wuxiaobin"
+  script:
+    - /home/gitlab-runner/script/deploy.py
+  only:
+    - master
+    - canary
+  tags:
+    - JETSAAS2
+  allow_failure: false
+  cache: {}
+  dependencies: []
+
+deploy_uat:
+  stage: deploy_uat
+  environment:
+    name: uat
+    url: https://wuxiaobin-uat.jetsaas.com/
+  variables:
+    ENV_NAME: "wuxiaobin-devops-uat"
+    DEPLOYMENT_NAME: "wuxiaobin"
+  script:
+    - /home/gitlab-runner/script/deploy.py
+  only:
+    - master
+    - canary
+  tags:
+    - JETSAAS2
+  allow_failure: false
+  when: manual
+  cache: {}
+  dependencies: []
+
+deploy_prod:
+  stage: deploy_prod
+  environment:
+    name: prod
+    url: https://wuxiaobin.jetsaas.com/
+  variables:
+    ENV_NAME: "wuxiaobin-devops-prod"
+    DEPLOYMENT_NAME: "wuxiaobin"
+  script:
+    - /home/gitlab-runner/script/deploy.py
+  only:
+    - master
+  tags:
+    - JETSAAS2
+  allow_failure: false
+  when: manual
+  cache: {}
+  dependencies: []
